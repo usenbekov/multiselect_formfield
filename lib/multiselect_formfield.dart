@@ -24,6 +24,8 @@ class MultiSelectFormField extends FormField<dynamic> {
   final Color textColor;
   final Color itemBgColor;
   final Color itemTextColor;
+  final bool readonly;
+  final bool showSelected;
 
   MultiSelectFormField({
     FormFieldSetter<dynamic> onSaved,
@@ -50,6 +52,8 @@ class MultiSelectFormField extends FormField<dynamic> {
     this.textColor,
     this.itemTextColor,
     this.itemBgColor,
+    this.readonly = false,
+    this.showSelected = true,
   }) : super(
           onSaved: onSaved,
           validator: validator,
@@ -79,8 +83,10 @@ class MultiSelectFormField extends FormField<dynamic> {
               return selectedOptions;
             }
 
+            bool hasSelected = showSelected && state.value != null && state.value.length > 0;
             return InkWell(
               onTap: () async {
+                if (readonly) return;
                 List initialSelected = state.value;
                 if (initialSelected == null) {
                   initialSelected = List();
@@ -129,13 +135,14 @@ class MultiSelectFormField extends FormField<dynamic> {
                       child: Row(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: <Widget>[
-                          Expanded(
-                              child: Text(
-                            titleText,
-                            style: TextStyle(
-                                fontSize: 13.0,
-                                color: (textColor ?? Colors.black).withOpacity(0.5)),
-                          )),
+                          if (!(!hasSelected && hintText == null))
+                            Expanded(
+                                child: Text(
+                              titleText,
+                              style: TextStyle(
+                                  fontSize: 13.0,
+                                  color: (textColor ?? Colors.black).withOpacity(0.5)),
+                            )),
                           required
                               ? Padding(
                                   padding: EdgeInsets.only(top: 5, right: 5),
@@ -151,7 +158,7 @@ class MultiSelectFormField extends FormField<dynamic> {
                         ],
                       ),
                     ),
-                    state.value != null && state.value.length > 0
+                    hasSelected
                         ? Wrap(
                             spacing: 8.0,
                             runSpacing: 0.0,
@@ -160,7 +167,7 @@ class MultiSelectFormField extends FormField<dynamic> {
                         : new Container(
                             padding: EdgeInsets.only(top: 4),
                             child: Text(
-                              hintText,
+                              hintText ?? titleText,
                               style: TextStyle(
                                 fontSize: 16,
                                 color: textColor,
