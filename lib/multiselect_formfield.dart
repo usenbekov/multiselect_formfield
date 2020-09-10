@@ -14,35 +14,43 @@ class MultiSelectFormField extends FormField<dynamic> {
   final Function change;
   final Function open;
   final Function close;
-  final Widget leading;
-  final Widget trailing;
+  final Widget prefixIcon;
+  final Widget suffixIcon;
   final String okButtonLabel;
   final String cancelButtonLabel;
   final Color fillColor;
   final InputBorder border;
+  final Widget icon;
+  final Color textColor;
+  final Color itemBgColor;
+  final Color itemTextColor;
 
-  MultiSelectFormField(
-      {FormFieldSetter<dynamic> onSaved,
-      FormFieldValidator<dynamic> validator,
-      dynamic initialValue,
-      bool autovalidate = false,
-      this.titleText = 'Title',
-      this.hintText = 'Tap to select one or more',
-      this.required = false,
-      this.errorText = 'Please select one or more options',
-      this.leading,
-      this.dataSource,
-      this.textField,
-      this.valueField,
-      this.change,
-      this.open,
-      this.close,
-      this.okButtonLabel = 'OK',
-      this.cancelButtonLabel = 'CANCEL',
-      this.fillColor,
-      this.border,
-      this.trailing})
-      : super(
+  MultiSelectFormField({
+    FormFieldSetter<dynamic> onSaved,
+    FormFieldValidator<dynamic> validator,
+    dynamic initialValue,
+    bool autovalidate = false,
+    this.titleText = 'Title',
+    this.hintText = 'Tap to select one or more',
+    this.required = false,
+    this.errorText = 'Please select one or more options',
+    this.prefixIcon,
+    this.dataSource,
+    this.textField,
+    this.valueField,
+    this.change,
+    this.open,
+    this.close,
+    this.okButtonLabel = 'OK',
+    this.cancelButtonLabel = 'CANCEL',
+    this.fillColor,
+    this.border,
+    this.suffixIcon = const Icon(Icons.unfold_more),
+    this.icon,
+    this.textColor,
+    this.itemTextColor,
+    this.itemBgColor,
+  }) : super(
           onSaved: onSaved,
           validator: validator,
           initialValue: initialValue,
@@ -53,10 +61,18 @@ class MultiSelectFormField extends FormField<dynamic> {
 
               if (state.value != null) {
                 state.value.forEach((item) {
-                  var existingItem = dataSource.singleWhere((itm) => itm[valueField] == item, orElse: () => null);
-                  selectedOptions.add(Chip(
-                    label: Text(existingItem[textField], overflow: TextOverflow.ellipsis),
-                  ));
+                  var existingItem =
+                      dataSource.singleWhere((itm) => itm[valueField] == item, orElse: () => null);
+                  selectedOptions.add(
+                    Chip(
+                      backgroundColor: itemBgColor,
+                      labelStyle: itemTextColor == null ? null : TextStyle(color: itemTextColor),
+                      label: Text(
+                        existingItem[textField],
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                  );
                 });
               }
 
@@ -95,11 +111,14 @@ class MultiSelectFormField extends FormField<dynamic> {
               },
               child: InputDecorator(
                 decoration: InputDecoration(
-                  filled: true,
+                  filled: false,
                   errorText: state.hasError ? state.errorText : null,
                   errorMaxLines: 4,
                   fillColor: fillColor ?? Theme.of(state.context).canvasColor,
                   border: border ?? UnderlineInputBorder(),
+                  icon: icon,
+                  prefixIcon: prefixIcon,
+                  suffixIcon: suffixIcon,
                 ),
                 isEmpty: state.value == null || state.value == '',
                 child: Column(
@@ -113,23 +132,22 @@ class MultiSelectFormField extends FormField<dynamic> {
                           Expanded(
                               child: Text(
                             titleText,
-                            style: TextStyle(fontSize: 13.0, color: Colors.black54),
+                            style: TextStyle(
+                                fontSize: 13.0,
+                                color: (textColor ?? Colors.black).withOpacity(0.5)),
                           )),
                           required
-                              ? Padding(padding:EdgeInsets.only(top:5, right: 5), child: Text(
-                                  ' *',
-                                  style: TextStyle(
-                                    color: Colors.red.shade700,
-                                    fontSize: 17.0,
+                              ? Padding(
+                                  padding: EdgeInsets.only(top: 5, right: 5),
+                                  child: Text(
+                                    ' *',
+                                    style: TextStyle(
+                                      color: Colors.red.shade700,
+                                      fontSize: 17.0,
+                                    ),
                                   ),
-                                ),
-                              )
+                                )
                               : Container(),
-                          Icon(
-                            Icons.arrow_drop_down,
-                            color: Colors.black87,
-                            size: 25.0,
-                          ),
                         ],
                       ),
                     ),
@@ -145,7 +163,7 @@ class MultiSelectFormField extends FormField<dynamic> {
                               hintText,
                               style: TextStyle(
                                 fontSize: 16,
-                                color: Colors.grey.shade500,
+                                color: textColor,
                               ),
                             ),
                           )
